@@ -1,0 +1,89 @@
+{
+  "_readme": "Copy this file to ~/.claude/qa-config.json and fill in your own values. Every skill in the qa-workflow plugin reads it. Secrets never go in here - only the NAMES of environment variables that hold them. Set the actual secrets in ~/.claude/settings.json under 'env'.",
+
+  "default_env": "qa",
+
+  "jira": {
+    "site": "<your-site>.atlassian.net",
+    "project_key": "<PROJ>",
+    "ready_for_testing_status": "Ready for Testing",
+    "in_qa_status": "In QA",
+    "testing_approved_status": "Testing Approved",
+    "defect_issuetype": "Defect",
+
+    "_note_product_field": "Optional. If your Jira project tags work items by product/app with a custom field, set its id and the value you test. Leave null to disable all product filtering.",
+    "product_field": null,
+    "product_value": null,
+    "product_options": {},
+
+    "_note_exclusions": "Optional. accountIds whose tickets CE-ForTesting should skip (other QA members, bots). Leave empty to consider every unassigned ticket.",
+    "exclude_assignee_account_ids": [],
+    "exclude_reporter_account_ids": []
+  },
+
+  "environments": {
+    "qa": {
+      "label": "QA",
+      "api": {
+        "base_url": "https://<your-api-host>",
+        "swagger_url": "https://<your-api-host>/swagger/index.html",
+        "swagger_json_url": "https://<your-api-host>/swagger/v1/swagger.json",
+        "token_env_var": "QA_API_TOKEN"
+      },
+      "ui": {
+        "base_url": "https://<your-ui-host>/<tenant-id>/Login",
+        "username_env_var": "QA_USERNAME",
+        "password_env_var": "QA_PASSWORD"
+      },
+      "k6": { "smoke_vus": 1, "smoke_iterations": 1 }
+    },
+    "staging": {
+      "label": "Staging",
+      "api": {
+        "base_url": "https://<your-staging-api-host>",
+        "swagger_url": "https://<your-staging-api-host>/swagger/index.html",
+        "token_env_var": "STAGING_API_TOKEN"
+      },
+      "ui": {
+        "base_url": "https://<your-staging-ui-host>/<tenant-id>/Login",
+        "username_env_var": "STAGING_USERNAME",
+        "password_env_var": "STAGING_PASSWORD"
+      },
+      "k6": { "smoke_vus": 1, "smoke_iterations": 1 }
+    },
+    "prod": {
+      "label": "Production",
+      "_warning": "Set default_env to 'prod' only for read-only production smoke checks. Tokens must have read-only scope.",
+      "api": {
+        "base_url": "https://<your-prod-api-host>",
+        "token_env_var": "PROD_API_TOKEN"
+      },
+      "ui": {
+        "base_url": "https://<your-prod-ui-host>"
+      },
+      "k6": { "smoke_vus": 1, "smoke_iterations": 1 }
+    }
+  },
+
+  "xray": {
+    "_note": "Xray Cloud endpoints are the same for every tenant - no need to change them.",
+    "api_base": "https://xray.cloud.getxray.app/api/v2",
+    "client_id_env_var": "XRAY_CLIENT_ID",
+    "client_secret_env_var": "XRAY_CLIENT_SECRET",
+    "gherkin_field": "customfield_10466",
+    "default_automation_status": "None"
+  },
+
+  "report_portal": {
+    "_note": "Optional. Only used by CE-AutomationVSManual. Leave null if you do not run ReportPortal.",
+    "base_url": null,
+    "project": null,
+    "api_key_env_var": "REPORTPORTAL_API_KEY"
+  },
+
+  "automation": {
+    "_note": "Optional. Local checkout of your Selenium/Playwright regression repo, and the mapping file CE-AutomationVSManual reads. See references/te-mapping.md for the mapping file format.",
+    "repo_path": null,
+    "te_mapping_path": "~/.claude/qa-te-mapping.md"
+  }
+}

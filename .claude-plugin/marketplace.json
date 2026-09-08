@@ -1,0 +1,17 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "qa-workflow-skill",
+  "owner": {
+    "name": "cendaya"
+  },
+  "description": "QA workflow skills for Jira + Xray Cloud",
+  "plugins": [
+    {
+      "name": "qa-workflow",
+      "source": "./plugins/qa-workflow",
+      "description": "End-to-end QA lifecycle for Jira + Xray Cloud: ticket pickup, acceptance-criteria validation against the merged PR, test-case generation (UI / API / performance), test execution with results written back to Xray, and defect filing",
+      "category": "testing",
+      "tags": ["qa", "testing", "jira", "xray", "playwright", "postman", "k6"]
+    }
+  ]
+}

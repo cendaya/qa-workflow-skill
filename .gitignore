@@ -1,0 +1,13 @@
+# Never commit a real config — it holds internal hostnames, tenant ids and account ids
+qa-config.json
+**/qa-config.json
+qa-te-mapping.md
+**/qa-te-mapping.md
+
+# Local artifacts
+__pycache__/
+*.pyc
+*.bak
+*.zip
+.test-case-writer.json
+.env
