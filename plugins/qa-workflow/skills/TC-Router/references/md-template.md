@@ -17,6 +17,13 @@ edit it in one session and import it in another.
 - An optional **Manual steps** markdown table (`| # | Action | Data | Expected |`) → the
   Manual test's step rows. If omitted for a Manual/Both case, derive the rows from the
   Gherkin block per SKILL.md.
+- `**Traces:**` and `**Oracle:**` are **required** on every case (see
+  `../../../references/qa-oracle-model.md`). `Traces` is the AC/`R` id, the changed symbol or file, or
+  the consumer module from the blast-radius grep — at least one. `Oracle` is `ac`, `prior-behaviour` or
+  `risk`; `none` is not a legal value, and a case parsed with a missing or `none` oracle is rejected on
+  import rather than written to Xray. Neither line is copied into the Xray description — the
+  traceability is stated inside the description's `Acceptance Criteria` section, and both tags appear
+  as columns in the Test Execution's coverage table.
 - `**Labels:**`, `**Component:**`, `**Automation:**`, `**WorkBreakdown:**`, `**TestSet:**`
   lines are optional. They feed the Jira `labels`/`components` fields, the Automation
   Status (default new tests → `Not Automated`), the Work Breakdown initiative (default
@@ -53,7 +60,9 @@ Test Plan: <leave blank until step 9 — e.g. PROJ-9100 | 06/02 Sprint Regressio
 ## [NEW]
 **Title:** Measurement Assistant calculates total area for a multi-polygon lawn
 **Type:** Cucumber
-**Labels:** RG, @Regression
+**Traces:** AC2
+**Oracle:** ac
+**Labels:** PROJ, @Regression
 **Component:** Measurement Assistant
 **Automation:** Not Automated
 **WorkBreakdown:** Core (Default)
@@ -77,6 +86,8 @@ Scenario: Total area sums multiple polygons
 ## [NEW]
 **Title:** Measurement Assistant rejects a self-intersecting polygon
 **Type:** Both
+**Traces:** PolygonValidator.Validate()
+**Oracle:** risk
 **Status:** draft
 **Result:** Cucumber: pending | Manual: pending
 
@@ -104,6 +115,8 @@ Manual steps:
 ## [UPDATE -> PROJ-8801]
 **Title:** Measurement Assistant single polygon area
 **Type:** Cucumber
+**Traces:** AreaCalculator.Recalculate() — behaviour before the change
+**Oracle:** prior-behaviour
 **Status:** draft
 
 Description:
@@ -131,6 +144,8 @@ model on** (SKILL.md step 5 "nothing comparable" branch) — otherwise mirror th
 ## [NEW]
 **Title:** Bake a Simple White Cake
 **Type:** Manual
+**Traces:** AC1
+**Oracle:** ac
 **Labels:** @Example, Example.feature
 **Component:** General/Shared
 **Automation:** Not Automated

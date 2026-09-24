@@ -9,6 +9,79 @@ Turn a Jira ticket into Xray Cloud test cases — **Gherkin (Cucumber)** or **Ma
 user's choice per case. Nothing is written to Xray without the user approving it, one case
 at a time.
 
+## Test case description — the only accepted shape
+
+Model every test case on **PROJ-187**. Four sections, in this order, and nothing else:
+
+1. `What is being tested` — the persona-based objective, one paragraph
+2. `Preconditions` — a bullet list
+3. `Acceptance Criteria` — **this is the traceability field; it also states the oracle.** For
+   `oracle: ac`, quote the requirement id(s) this case covers — the derived `R1..Rn` when the ticket has
+   no ACs. For `oracle: prior-behaviour`, name the changed symbol and state the behaviour that held
+   before the change. For `oracle: risk`, say plainly that the AC does not specify this input, then
+   state the baseline expectation being applied and where it comes from. Never leave the section out,
+   and never assert an expectation whose source you cannot name in this section
+4. `Gherkin` — **inside a fenced code block**, never as loose paragraphs
+
+Everything else — notes on the fix, commit SHAs, coverage gaps, why the case exists, the whole story of
+the testing — belongs on the **Test Execution**, not on the case. A test case says what is being tested
+and how to tell whether it passed. Nothing more.
+
+### Writing it so it actually renders
+
+**Markdown sent through Xray GraphQL's `jira.fields.description` does not render.** On 2026-09-15 all
+eight PROJ-11082…PROJ-11089 descriptions were written that way and came out mangled: `###` headings
+became nested numbered lists reading `1. 1. 1. What is being tested`, and the ```` ```gherkin ````
+fence rendered as literal backticks in a paragraph. Xray's create mutation takes that field as plain
+text.
+
+Write the description as **HTML**, through the Atlassian MCP, which converts it correctly:
+
+```
+executeWrite name=editJiraIssue
+  inputs: { issueIdOrKey, contentFormat: "html", additional_fields: { description: "<h3>…" } }
+```
+
+The HTML shape that matches PROJ-187:
+
+```html
+<h3>What is being tested</h3><p>…</p>
+<h3>Preconditions</h3><ul><li><p>…</p></li></ul>
+<h3>Acceptance Criteria</h3><ul><li><p>R1 — …</p></li></ul>
+<h3>Gherkin</h3><pre><code class="language-gherkin">Scenario: …
+  Given …
+  When …
+  Then …</code></pre>
+```
+
+Escape `<` and `>` inside Gherkin placeholders as `&lt;` / `&gt;`.
+
+Note `description` goes in **`additional_fields`** — a top-level `description` on `editJiraIssue` is
+dropped silently.
+
+**Always read the description back and check it rendered** — `getJiraIssue` with
+`responseContentFormat: "html"` — before calling the case done. Confirm real `<h3>` elements and a
+`<pre><code class="language-gherkin">` block. Creating eight cases and discovering the formatting is
+broken afterwards costs more than the one verification call.
+
+The same applies to the Test Execution description: same HTML path, same read-back check.
+
+---
+
+> **Do not assume the Xray MCP is connected.** On 2026-09-15 `createTest` and
+> `createTestExecution` were unavailable in a live session — the MCP simply was not loaded.
+> When that happens, do not stop: fall back to the allowlisted helper, which authenticates
+> itself from `mcpServers.xray.env` in `~/.claude/settings.json` and speaks the same GraphQL:
+>
+> ```
+> python ../../scripts/xray-graphql.py "<query or mutation>"
+> ```
+>
+> It exits 1 and prints the body when the response carries `errors`. All of PROJ-11082…PROJ-11090
+> was created this way. For unattended runs the helper is the *primary* path, not the fallback.
+> Ad-hoc `curl` and inline `python -c` against `xray.cloud.getxray.app` are not allowlisted and
+> will stall an unattended run.
+
 ## Inputs (ask for any that are missing)
 
 1. **Project** — defaults to `jira.project_key` from `$env:USERPROFILE\.claude\qa-config.json`. If
@@ -20,6 +93,37 @@ at a time.
 
 ## Iron rules
 
+- **The publish gate is mandatory and mechanical, and it is a script.** After creating any test
+  or Test Execution, and before reporting the work as done, run
+  `python ../../scripts/qa-gate-check.py <TICKET> <TE_KEY> --approved <TICKET>.md` and act
+  on the exit code — 0 proceed, 1 fix the artefact, 2 decide the MANUAL rows by hand, 3 Xray
+  unreachable (not a pass). Then the remaining checks in
+  `../../references/qa-publish-gate.md`: descriptions non-empty **and** rendering,
+  links present **and** pointing the right way, comments in the settled shape, transition
+  ids fetched rather than reused. Run the commands and read the output — do not judge
+  whether it probably passed. All four checks failed on real work on 2026-09-16, on a suite
+  that looked finished in Xray.
+
+  In particular: `createTest` takes **summary and steps only**. The description is always a
+  **separate** `editJiraIssue` call with `contentFormat: "markdown"`. A description passed
+  into the create call is stored as plain text.
+- **Every case carries `Traces` and `Oracle`, and a case with no oracle is never written.** This is the
+  oracle rule, governed by `../../references/qa-oracle-model.md` — read it before drafting.
+  `Traces` = the AC id / derived `R` id, the changed symbol or file, or the consumer module from the
+  blast-radius grep; at least one, never empty, never "general coverage". `Oracle` = where the expected
+  result comes from:
+
+  | Oracle | Source of the expected result | Authority of a failure |
+  |---|---|---|
+  | `ac` | The quoted AC or derived `R` | Real defect. Blocks *Testing Approved* |
+  | `prior-behaviour` | The behaviour before the change — an existing passing test, a spec, a demonstrated baseline | Real regression. Blocks *Testing Approved* |
+  | `risk` | Boundary/equivalence analysis on an input **the change actually touches** | Flag, not a defect. Does **not** block |
+  | `none` | Nothing — the AC is silent | **Not a case.** An observation or a spec question on the TE |
+
+  A case you cannot tag is not a weak case, it is undefined behaviour with an invented expected value.
+  Send it to the TE description under `Observations for dev` or `Open questions for product` and move
+  on. PROJ-11089 and PROJ-11236 were both written as assertions with no oracle and both had to be
+  pulled back out of finished-looking executions.
 - **Never write to Xray without explicit per-case approval.** On any uncertainty: skip.
 - **Keep cases generic — never bake in specific data.** Test cases are reused across many
   runs; the QA engineer plugs real values in at test time. Write data as named placeholders
@@ -34,6 +138,39 @@ at a time.
 - **Soft cap of 10 cases.** Generate at most 10. If full coverage genuinely needs more,
   STOP and ask whether to create extra cases (and how many). Never silently exceed or
   silently truncate.
+- **One case per distinct BEHAVIOUR, never one per data value.** This is the difference
+  between a suite someone will read and a suite that looks like padding. Before writing,
+  group the scenarios: if two would have the *same* steps and differ only in the value
+  fed in or the module it is pointed at, they are **one** case with a `Scenario Outline`
+  and an `Examples:` table (or a table in the description and one step per row).
+
+  Merge when the steps are identical and only the data changes. Keep separate when the
+  *behaviour* differs — a value being preserved, a value being rejected, and a field being
+  disabled are three behaviours, however similar they look.
+
+  ```
+  WRONG - 4 cases, one per year          RIGHT - 1 case, 4 examples
+    hold date 9999 saves as entered        hold To date preserves the entered year
+    hold date 9998 saves as entered          | entered    | wrong      |
+    hold date 2099 saves as entered          | 12/31/9999 | 12/31/1991 |
+    hold date 9997 saves as entered          | 12/31/2099 | 12/31/1999 |
+  ```
+
+  The same applies to regression coverage across a blast radius: **one** case with a module
+  table beats one case per module. Coverage is unchanged — the modules are still named, still
+  stepped, still assertable — but the suite reads as five behaviours instead of twelve
+  near-duplicates.
+
+  **Consolidating must not drop coverage.** Every acceptance criterion, and every module in
+  the blast radius, must still appear somewhere — as an example row, a module row, or a step.
+  Merging is about presentation, not scope. State the mapping (which AC each case covers)
+  when you present the cases for approval.
+
+  **Why:** PROJ-10500 was first written as 12 cases — four differing only by year value, six
+  differing only by module — and had to be deleted and rebuilt as 5. The configured QA
+  assignee: *"similar scenarios should be put together in one TCS so that not too many TCs
+  that seems redundant is added"*, while *"maintaining coverage for all testing of the
+  entirety of the ticket."*
 - **Never auto-create a Test Repository folder** — except for API tickets (see step 4):
   if the resolved API folder doesn't exist, create it automatically.
 - **Never auto-create a Test Set.** Each test should join ≥1 Test Set; the set (existing,
@@ -47,6 +184,18 @@ at a time.
   Test Plan from the board's open plans — even if there's only one — and links both the
   execution and its tests into that plan. Never auto-create a Test Execution or a Test Plan
   without asking.
+
+  Two exceptions, both learned the hard way on 2026-09-15:
+
+  - **Invoked from CE-QA-Workflow, the Test Execution is required, not opt-in** — that
+    workflow's Phase 2.5 cannot execute anything without one, so asking just dead-ends a
+    run that was told to go start-to-finish.
+  - **A plan is only eligible if its sprint matches the ticket's active sprint.** Read
+    `customfield_10115` — a *list* of every sprint the ticket passed through — and take the
+    entry whose `state` is `active`. If no open plan names that sprint, **leave the execution
+    unlinked** and say so. Do not offer the user the only open plan when its sprint is
+    closed: a TE parked there silently pads a finished sprint's numbers. PROJ-11090 was linked
+    into `Sprint 377` when its ticket was in 378, and had to be removed.
 
 ## Workflow
 
@@ -138,17 +287,37 @@ Create a TodoWrite item per step.
      list) exists for this ticket, walk its requirement table row by row and confirm each
      one maps to at least one drafted case. A requirement with zero mapped cases is a gap —
      draft a case for it before moving on, don't silently drop it.
-   - **Regression coverage for fixes.** If the ticket is a defect/bug-fix (issuetype
+   - **Regression coverage has two halves, and both are required.**
+
+     **(a) The behaviour the fix touches.** If the ticket is a defect/bug-fix (issuetype
      Defect/Production Defect, or the diff/PR is clearly a targeted fix), draft at least one
      case that exercises the **pre-existing correct behavior the fix touches** — not just the
-     bug scenario itself. A fix that decodes/transforms/short-circuits data on every call can
+     bug scenario itself.
+
+     **(b) The affected modules.** Measure which modules the changed code can reach and add one
+     case per module, covering that module still working *as a whole*. Grep for the consumers of
+     every changed file — `RenderPartial` call sites for a partial, callers for a method, the
+     class name for a CSS/JS hook, the same tables for a SQL change — and record the counts in
+     the TE under a `Blast radius` heading. Never infer reach from the folder name: PROJ-10327's
+     fix was in `Views/Shared/` yet had exactly one consumer, while a change with one innocuous-
+     looking caller can touch every report on the board. Full rule in `CE-QA-Workflow`
+     Phase 2. A fix that decodes/transforms/short-circuits data on every call can
      break the unaffected (already-working) input path; a reviewer's logical happy-path
      simulation is not a substitute for an actual regression case. Model it as
      "`<Feature> With <Baseline/Standard Input> (Regression)`".
+   - **Oracle audit — every drafted case, before approval.** Walk the list and put a `Traces` and an
+     `Oracle` on each one. Any case that ends up `none`, or whose `Traces` you cannot name, comes out
+     of the list now and goes to the TE description as an observation or a spec question. Report the
+     mix: *"7 cases — 4 `ac`, 2 `prior-behaviour`, 1 `risk`; 2 findings downgraded to observations."*
+     Per-category coverage grids (CE-TC-UI's happy/edge/negative/a11y, and the API and Perf
+     equivalents) are **subordinate to this**: a category with nothing traceable to the blast radius
+     gets a stated reason in the report, not a case invented to fill the row.
    - State in the report which requirement each case maps to, and call out explicitly if a
      requirement has no case (with reason) rather than leaving it implicit.
 
-6. **Approve one at a time.** Walk cases individually. For each, the user picks a **type**
+6. **Approve one at a time.** Show each case's `Traces` and `Oracle` alongside it — they are settled
+   in step 5a, not decided here, but the user must be able to see that a `risk` case is non-blocking
+   before approving it. Walk cases individually. For each, the user picks a **type**
    (**Gherkin** / **Manual** / **Both**, pre-selected to the folder's predominant type
    from step 4) and an action. **Three values are approved here, not just defaulted** (hard
    approval-of-value gates):
@@ -280,9 +449,27 @@ Create a TodoWrite item per step.
 
      ### Other information
      * <additional tech details: existing operations, endpoint routes, models, response codes>
-     * Testing checklist:
-         * <QA checklist items from ticket Engineering Notes / QA section>
+
+     ### Risk findings
+     * <per auto-cleared `oracle: risk` deviation — the full write-up, ending in the one question
+       product must answer. Shape in `qa-oracle-model.md` §6b>
+     * <or "none">
+
+     ### Observations for dev
+     * <oracle-less findings, recorded without a verdict: "X produces Y; the AC is silent on X">
+     * <or "none">
+
+     ### Open questions for product
+     * <"The AC does not define behaviour when X. Current behaviour is Y. Is that intended?">
+     * <or "none">
+
+     ### Testing checklist
+     * <QA checklist items from ticket Engineering Notes / QA section>
      ```
+
+     `Observations for dev` and `Open questions for product` are where every `oracle: none` finding
+     goes (`../../references/qa-oracle-model.md` §3). Write "none" under each rather than dropping
+     the heading — silence reads as an oversight.
      Set the execution's **Component(s)** from the ticket's (else the folder's predominant
      component). **Never set or change the assignee** — leave whatever Jira applies.
      Link the execution to the ticket: `createIssueLink` type `Test`, inwardIssue = TE key,
@@ -384,7 +571,7 @@ Create a TodoWrite item per step.
   initiative. Field id is project-specific — discover with `getJiraIssueTypeMetaWithFields`;
   if unresolved, note the intended value in the report.
 - **Labels** (`jira.fields.labels`, optional) — apply the project/product key label (e.g.
-  `RG`) plus any automation tags the ticket/folder convention implies (feature file or
+  `PROJ`) plus any automation tags the ticket/folder convention implies (feature file or
   suite, e.g. `@Regression`). Reuse the folder's existing label convention; don't invent
   new schemes.
 - **Component** (`jira.fields.components`, `[{ name }]`) — populate so the test reports and
@@ -482,11 +669,11 @@ auto-scan target for resume (step 2).
 - Auto-creating a Test Set, or leaving a test in no Test Set silently. → Use an existing
   set or ask; record "none" in the report if declined.
 - Naming a new Test Set freeform (e.g. just the module, or `<ticket> | …` like an
-  execution). → Use **`<Product> - <Module>`** (e.g. `<Product> - <Module>`); see Field
-  mapping.
+  execution). → Use **`<Product> - <Module>`** (e.g. `<Product> - Document Storage`); see
+  Field mapping.
 - Creating a Test Set without its **Product** field, or with a Product that disagrees with
-  the name prefix. → Set Product (`<jira.product_field>` on RG) to match the prefix:
-  the values in `jira.product_options`.
+  the name prefix. → Set Product (`jira.product_field`) to match the prefix: one of the
+  values in `jira.product_options`.
 - Auto-creating a Test Execution without asking. → Always ask after per-case approvals;
   note in report if skipped.
 - Creating a second Test Execution for a ticket that already has one. → Reuse the

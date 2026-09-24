@@ -1,6 +1,6 @@
 ---
 name: CE-Create-Bug
-description: Use when a QA engineer wants to file a Jira Defect ticket. Searches for duplicates first, confirms before creating (issuetype=Defect, Priority=Low, Assignee=Unassigned), then asks if user wants to generate linked test cases via /JD-TC-writer. Triggers include "create bug for RG", "log a bug in ADA", "file bug ticket", "new bug in <project>", "create defect".
+description: Use when a QA engineer wants to file a Jira Defect ticket. Searches for duplicates first, confirms before creating (issuetype=Defect, Priority=Low, Assignee=Unassigned), then asks if user wants to generate linked test cases via /JD-TC-writer. Triggers include "create bug for <PROJ>", "log a bug in <project>", "file bug ticket", "new bug in <project>", "create defect".
 ---
 
 # CE-Create-Bug
@@ -102,7 +102,7 @@ Ask: **"Create this ticket?"** Wait for confirmation.
 
 Use `createJiraIssue` (load via ToolSearch `select:mcp__plugin_atlassian_atlassian__createJiraIssue`):
 
-- `project`: resolved key (e.g. `RG`)
+- `project`: resolved key (`jira.project_key`, e.g. `<PROJ>`)
 - `issuetype`: `Defect`
 - `summary`: bug summary
 - `priority`: `{ "name": "<priority>" }` — default `Low`
@@ -191,7 +191,7 @@ Feature: <feature name>
 ## Common mistakes
 
 - Creating the ticket before showing duplicate search results. → Always search and show results first.
-- Using issuetype `Bug` instead of `Defect`. → RG project uses `Defect`.
+- Using issuetype `Bug` instead of `Defect`. → this project uses `Defect`.
 - Searching outside the stated project. → JQL must always include `project = <KEY>`.
 - Using `###` H3 headers in the description. → Use `##` H2 headers matching PROJ-9554.
 - Auto-triggering /JD-TC-writer without asking. → Always ask user first; they may want to skip test case generation.

@@ -22,6 +22,15 @@ Every endpoint must produce at minimum one case per category:
 
 If a category has no applicable scenario for the ticket, note why in the report — don't silently skip.
 
+**The grid is subordinate to the oracle rule.** `../../references/qa-oracle-model.md` decides
+whether a row gets a case at all: it must trace to an AC/derived `R`, to the changed code, or to a
+measured consumer module, and it must carry an `Oracle` of `ac`, `prior-behaviour` or `risk`. A
+category with nothing traceable to the blast radius gets **a stated reason in the report, not a case
+invented to fill the row** — that is how PROJ-11089's a11y case ended up asserting a labelling
+expectation the ticket never made, and being pulled back out of PROJ-11090 afterwards. Findings that
+fall out of the grid this way go to the Test Execution under `Observations for dev` or
+`Open questions for product`.
+
 ## Field mapping overrides
 
 - **Objective** — "Verify that…" sentence + Swagger link. Example: *"Verify that POST /invoices returns 201 with the created invoice id when given a valid payload. [Swagger](<api.swagger_url from qa-config.json>)"*

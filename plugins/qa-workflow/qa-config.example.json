@@ -74,6 +74,13 @@
     "default_automation_status": "None"
   },
 
+  "github": {
+    "_note": "Optional. Used by CE-AC-Validator and CE-QA-Workflow to find the PR and commits behind a ticket. 'org' scopes the `gh api search/issues` query. 'alt_key_prefixes' lists any second key system your developers use in branch and PR titles (e.g. a dev-side tracker) so a search on the Jira key alone does not come back empty.",
+    "org": null,
+    "repos": [],
+    "alt_key_prefixes": []
+  },
+
   "report_portal": {
     "_note": "Optional. Only used by CE-AutomationVSManual. Leave null if you do not run ReportPortal.",
     "base_url": null,

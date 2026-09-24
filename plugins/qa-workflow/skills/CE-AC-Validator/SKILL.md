@@ -97,6 +97,8 @@ Use ToolSearch `select:mcp__plugin_github_github__get_file_contents` to read spe
 
 Label these as "exploratory risk zones" — output in Step 6 as a separate report section. These are not failures; they are suggestions for where to probe beyond the AC.
 
+**Exploratory risk zones have no oracle.** They are inputs to the Phase 1.6 ruling in `CE-QA-Workflow`, not test cases and not verdicts. A zone becomes a case only once it can be tagged `ac` (an AC covers it), `prior-behaviour` (there is a baseline it departs from) or `risk` (the change actually touches the input). Otherwise it ends up as an observation or a spec question on the Test Execution. See `../../references/qa-oracle-model.md`.
+
 ### Step 4 — Check linked tests and results
 
 1. **Xray tests linked to the ticket** — JQL: `issue in linkedIssues("<TICKET>", "is tested by")`. Fetch via Xray GraphQL (`getTests`, see xray-queries reference). For each linked test: get latest execution result (pass / fail / not run / blocked).

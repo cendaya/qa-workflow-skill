@@ -22,7 +22,22 @@ Every ticket must produce at minimum one case per category:
 
 If a category has no applicable scenario for the ticket, note why in the report — don't silently skip.
 
+**The grid is subordinate to the oracle rule.** `../../references/qa-oracle-model.md` decides
+whether a row gets a case at all: it must trace to an AC/derived `R`, to the changed code, or to a
+measured consumer module, and it must carry an `Oracle` of `ac`, `prior-behaviour` or `risk`. A
+category with nothing traceable to the blast radius gets **a stated reason in the report, not a case
+invented to fill the row** — that is how PROJ-11089's a11y case ended up asserting a labelling
+expectation the ticket never made, and being pulled back out of PROJ-11090 afterwards. Findings that
+fall out of the grid this way go to the Test Execution under `Observations for dev` or
+`Open questions for product`.
+
 ## Field mapping overrides
+
+> **Description shape and rendering are governed by TC-Router's "Test case description — the only
+> accepted shape" section.** Four sections (What is being tested / Preconditions / Acceptance Criteria /
+> Gherkin), Gherkin in a fenced code block, written as HTML through `editJiraIssue` with
+> `contentFormat: "html"`, then read back with `responseContentFormat: "html"` to confirm it rendered.
+> Markdown through Xray GraphQL comes out mangled. Model on **PROJ-187**.
 
 - **Objective** — always persona-based: *"As a [role], I should be able to [action]. I would expect [outcome]."*
 - **Gherkin style** — user-centric language only. `Given I am logged in as <role>`, `When I [interact with UI element]`, `Then I [see / cannot / am redirected]`. No CSS selectors, no internal IDs, no implementation details.

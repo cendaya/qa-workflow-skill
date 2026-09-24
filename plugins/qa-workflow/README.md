@@ -74,6 +74,27 @@ that prove them. That map is specific to your suite, so it is not shipped. Creat
 
 Keep it outside the plugin directory — `/plugin update` overwrites plugin files.
 
+## Shared references and scripts
+
+Two directories sit beside `skills/` and are cited by several skills at once:
+
+`references/`
+- `qa-oracle-model.md` — what a case is allowed to assert. Every drafted case carries `Traces`
+  and an `Oracle` (`ac` / `prior-behaviour` / `risk`); a case that can fill neither is not a case,
+  it is an observation on the Test Execution. Read it before drafting.
+- `qa-publish-gate.md` — the numbered checks that must pass before work is reported done:
+  descriptions non-empty **and** rendering, links pointing the right way, comments in the settled
+  shape, transition ids fetched rather than reused.
+
+`scripts/` — both read `~/.claude/qa-config.json` and resolve secrets from the env var *names*
+it configures, never from the file itself.
+- `qa-gate-check.py` — mechanical publish gate.
+  `python scripts/qa-gate-check.py <TICKET> <TE_KEY> --approved <TICKET>.md`.
+  Exit codes: `0` proceed, `1` fix the artefact, `2` decide the MANUAL rows by hand,
+  `3` Xray unreachable (**not** a pass).
+- `xray-graphql.py` — Xray GraphQL helper for when the Xray MCP is not loaded. Exits 1 and prints
+  the body when the response carries `errors`. For unattended runs this is the primary path.
+
 ## Notes
 
 - No skill writes to Jira or Xray without showing you what it will write first, except the

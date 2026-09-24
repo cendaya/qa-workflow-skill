@@ -345,7 +345,7 @@ create via the Atlassian MCP. Resolve their field ids from the Test issue type, 
 - **Work Breakdown** — default `Core (Default)` (user may have overridden it to a swarm
   initiative).
 
-1. `getJiraIssueTypeMetaWithFields` (project `RG`, issuetype `Test`) → find each field and
+1. `getJiraIssueTypeMetaWithFields` (project `<jira.project_key>`, issuetype `Test`) → find each field and
    its `customfield_NNNNN` id and the option value/id.
 2. `editJiraIssue` setting each field to the matching option.
 
