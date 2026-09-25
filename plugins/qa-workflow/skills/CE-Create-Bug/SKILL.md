@@ -1,11 +1,11 @@
 ---
 name: CE-Create-Bug
-description: Use when a QA engineer wants to file a Jira Defect ticket. Searches for duplicates first, confirms before creating (issuetype=Defect, Priority=Low, Assignee=Unassigned), then asks if user wants to generate linked test cases via /JD-TC-writer. Triggers include "create bug for <PROJ>", "log a bug in <project>", "file bug ticket", "new bug in <project>", "create defect".
+description: Use when a QA engineer wants to file a Jira Defect ticket. Searches for duplicates first, confirms before creating (issuetype=Defect, Priority=Low, Assignee=Unassigned), then asks if user wants to generate linked test cases via /TC-Router. Triggers include "create bug for <PROJ>", "log a bug in <project>", "file bug ticket", "new bug in <project>", "create defect".
 ---
 
 # CE-Create-Bug
 
-File a Jira **Defect** ticket in a target project. Searches for existing related defects first, gets approval, creates the ticket, then generates linked Xray test cases via /JD-TC-writer.
+File a Jira **Defect** ticket in a target project. Searches for existing related defects first, gets approval, creates the ticket, then generates linked Xray test cases via /TC-Router.
 
 Ticket URL pattern: `https://<jira.site>/browse/<KEY>-XXXX`
 
@@ -24,7 +24,7 @@ Ticket URL pattern: `https://<jira.site>/browse/<KEY>-XXXX`
 - **Search is scoped to the stated project only.** Never search across all projects.
 - **Issue type is always `Defect`**, not `Bug`.
 - **Never auto-set Assignee to a real user** unless the user explicitly names one.
-- **Ask before invoking /JD-TC-writer** — user may choose to skip test case generation.
+- **Ask before invoking /TC-Router** — user may choose to skip test case generation.
 - **Always capture staging + Master status** in the Environment section — never leave `_Staging_` or `_Master_` blank.
 - **Never echo Xray tokens or secrets** in output, files, or logs.
 
@@ -123,11 +123,11 @@ After reporting the new ticket, ask:
 
 > "Would you like to generate linked test cases for this defect? (yes / no)"
 
-**If yes** — invoke the **JD-TC-writer** skill, passing:
+**If yes** — invoke the **TC-Router** skill, passing:
 - The new defect ticket key (e.g. `PROJ-XXXX`)
 - The project name
 
-JD-TC-writer handles Xray test case creation and linking. Each test case is linked to the defect ticket using issue link type **Test**:
+TC-Router detects the test type and routes to **CE-TC-UI** (UI/frontend), **CE-TC-API** (REST endpoints) or **CE-TC-Perf** (load/performance); mixed or generic defects it handles itself. That skill handles Xray test case creation and linking. Each test case is linked to the defect ticket using issue link type **Test**:
 - inwardIssue = TC key, outwardIssue = defect ticket key
 - Defect ticket shows: **"is tested by [TC key]"**
 - TC shows: **"tests [DEFECT key]"**
@@ -194,7 +194,7 @@ Feature: <feature name>
 - Using issuetype `Bug` instead of `Defect`. → this project uses `Defect`.
 - Searching outside the stated project. → JQL must always include `project = <KEY>`.
 - Using `###` H3 headers in the description. → Use `##` H2 headers matching PROJ-9554.
-- Auto-triggering /JD-TC-writer without asking. → Always ask user first; they may want to skip test case generation.
+- Auto-triggering /TC-Router without asking. → Always ask user first; they may want to skip test case generation.
 - Setting a real Assignee by default. → Default is always Unassigned unless user specifies.
 - Not showing proposed ticket details before creating. → Always confirm in Step 3.
 - Assuming zero duplicates means skip the approval gate. → Still confirm once even if none found.

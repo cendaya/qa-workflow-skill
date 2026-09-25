@@ -1,7 +1,7 @@
 {
   "$schema": "https://code.claude.com/schemas/plugin.json",
   "name": "qa-workflow",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "End-to-end QA lifecycle for Jira + Xray Cloud: ticket pickup, acceptance-criteria validation against the merged PR, test-case generation (UI / API / performance), test execution with results written back to Xray, and defect filing",
   "author": {
     "name": "cendaya"

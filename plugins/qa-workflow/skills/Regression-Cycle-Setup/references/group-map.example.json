@@ -1,0 +1,21 @@
+{
+  "_readme": "Key-based assignment map, used with --keys-file. Use this shape instead of assignment-map.example.json when the Test Set's tests all sit in one flat folder, so there is no module path to split on and tests have to be grouped by key. Copy to your maps_dir (see regression_cycle.maps_dir in qa-config.json). Never commit a filled-in copy - it holds real Jira account ids.",
+
+  "_note_people": "accountId -> display name. Names are for the report only; the accountId is what gets written.",
+  "people": {
+    "<accountId-1>": "<QA 1>",
+    "<accountId-2>": "<QA 2>"
+  },
+
+  "_note_groups": "Your own grouping of the Test Set, by subject. Every test key in the Test Set must appear in exactly one group or it comes back UNMAPPED. --check-maps reports keys that are in the set but in no group (NEW) and keys in a group that have left the set (STALE).",
+  "groups": {
+    "<Group A>": {
+      "assignee": "<accountId-1>",
+      "tests": ["<PROJ-1001>", "<PROJ-1002>", "<PROJ-1003>"]
+    },
+    "<Group B>": {
+      "assignee": "<accountId-2>",
+      "tests": ["<PROJ-2001>", "<PROJ-2002>"]
+    }
+  }
+}

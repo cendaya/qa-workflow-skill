@@ -444,6 +444,17 @@ After filing bugs, ask: "Bugs filed. Proceed to Phase 2 (test case generation) o
 
 Once validation passes (or user approves proceeding):
 
+**First: does this ticket already have test cases?** Phase 1.5 checked the module's Test *Execution*
+baseline — a different question. Before any drafting, read the ticket's links
+(`getJiraIssue`, `fields: ["issuelinks"]`) and keep the **"is tested by"** links. If any exist, show
+them — key, summary, current steps — and ask **update these / add only what's missing / start fresh**
+(TC-Router step 4a holds the full table). Carry the answer into Phase 2 so TC-Router does not re-derive
+it. Never generate over the top of linked coverage without that answer.
+
+**Why:** nothing downstream catches it. The Test Execution is deduped by summary and the test-to-TE
+link is deduped by issueId, so re-running this workflow on a ticket produces a *second set of cases*
+hanging off the same ticket and the same execution, and every check still reports green.
+
 **Run the full TC-Router workflow on this ticket.** TC-Router step 0 detects test type and routes:
 
 - **API ticket** → CE-TC-API (happy path + edge + negative scenarios, smoke test, Postman JSON)
@@ -842,6 +853,7 @@ unattended, the missing row is the bug.
 - Filing a Defect straight off a gap. → A gap is a code-review finding. It becomes a defect once manual execution confirms user impact, and only if the user asks for a ticket.
 - Reporting a gap as "looks like it overlaps / may be slow". → Prove it with a probe, quote the measured numbers, then delete the probe.
 - Jumping to TC-Router without finishing the full CE-AC-Validator report. → Complete Phase 1 entirely first.
+- Drafting test cases without checking the ticket's "is tested by" links first. → A re-run then hangs a second set of cases off the same ticket and the same TE, and nothing downstream flags it. Ask update / add-only / start fresh before Phase 2.
 - Generating test cases for out-of-scope changes flagged in validation. → Only test what's in the ticket.
 - Auto-proceeding after a Partial verdict. → Ask the user.
 - Losing the requirement list between phases. → Use Phase 1's requirement table to guide Phase 2 case coverage.

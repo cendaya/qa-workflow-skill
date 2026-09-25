@@ -65,6 +65,48 @@ its `generate-test-code` skill. Without it, that step is skipped and noted in th
 Skills also trigger on plain language — "start testing PROJ-1234", "what should I test",
 "write API test cases for PROJ-1234".
 
+## Regression-Cycle-Setup — extra setup
+
+`Regression-Cycle-Setup` needs two things the other skills don't: a cycle definition in config,
+and your own assignment maps on disk. Until both exist the script exits with a message rather
+than doing anything.
+
+**1. Define the cycle** in `regression_cycle.executions` in `~/.claude/qa-config.json` — one
+entry per Test Execution, each naming the Test Set it is filled from and the assignment map
+that sets its run assignees:
+
+```json
+"regression_cycle": {
+  "maps_dir": "~/.claude/qa-regression-maps",
+  "work_breakdown": { "field_id": "customfield_XXXXX", "value_id": "NNNNN" },
+  "executions": [
+    { "summary": "<Product> Regression",              "test_set": "<PROJ-1000>", "map": "regression-map.json" },
+    { "summary": "<Product> Prerelease Smoke Test",   "test_set": "<PROJ-1002>", "map": "owner-prerelease.json" },
+    { "summary": "<Product> Post-Release Smoke Test", "test_set": "<PROJ-1002>", "map": "owner-postrelease.json" }
+  ]
+}
+```
+
+Two executions may share a Test Set. `work_breakdown` is optional — a single-select custom
+field stamped on each new execution; leave it `null` to skip. Execution names are used exactly
+as written; the Test Plan is what tells one cycle from the next.
+
+**2. Write the assignment maps.** Copy the two examples from
+`skills/Regression-Cycle-Setup/references/` into `maps_dir`, rename them to match your config,
+and fill in your own people and areas:
+
+- `assignment-map.example.json` — folder-based (`map`), for a Test Set whose tests sit under
+  module folders. Module → accountId.
+- `group-map.example.json` — key-based (`keys_map`), for a Test Set whose tests all sit in one
+  flat folder, so they have to be grouped by test key instead.
+
+Keep the filled-in maps in `maps_dir`, **not** in the skill folder — they hold real Jira account
+ids, and `/plugin update` overwrites plugin files. Find an accountId with the Atlassian MCP
+`lookupJiraAccountId`.
+
+Also requires Node 18+ and the same `XRAY_CLIENT_ID` / `XRAY_CLIENT_SECRET` env vars as the rest
+of the plugin.
+
 ## The automation mapping file
 
 `CE-AutomationVSManual` needs a map from Test Execution cases to the automated scenarios

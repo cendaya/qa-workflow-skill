@@ -261,6 +261,27 @@ Create a TodoWrite item per step.
    `/API Testing` itself is missing, create both levels. No user confirmation needed for
    this auto-create — it is the expected folder structure for API tickets.
 
+4a. **Does this ticket already have test cases? (mandatory, before drafting anything.)**
+   Folder listing answers *"what exists in this module"*. It does not answer *"did someone
+   already write cases for this exact ticket"* — and re-running the workflow on a ticket is
+   common. Read the ticket's links via Atlassian MCP `getJiraIssue`
+   (`fields: ["issuelinks"]`) and keep the **"is tested by"** links (same read as reference
+   §9c, which step 9 needs anyway — do it once here and carry the result forward).
+
+   If any exist, **stop and show them** — key, summary, and current `gherkin` / `steps` —
+   then ask which applies:
+
+   | Option | Meaning |
+   |---|---|
+   | **Update these** | The ticket's scope changed; the existing cases should absorb it. Tag them UPDATE in step 5. |
+   | **Add to them** | Existing cases stand; this run only writes what they do not already cover. Present the gap list first. |
+   | **Start fresh** | The old cases are wrong or belong to a superseded scope. Say what happens to them — they are not silently orphaned. |
+
+   Never draft over the top of linked coverage without that answer. **Why:** the TE is
+   deduped by summary (§9b) and the test-to-TE link is deduped by issueId (step 9), so a
+   re-run silently produces a *second set of cases* linked to the same ticket and the same
+   execution, and nothing in the pipeline flags it.
+
 5. **Generate cases** (≤10), **anchored to the existing tests from step 4**. Before
    drafting anything new, match each requirement against what's already in the folder:
    - Is there a test covering the **same scenario intent**? → tag **UPDATE → `<KEY>`** (the
@@ -276,6 +297,19 @@ Create a TodoWrite item per step.
    When in doubt between UPDATE and NEW, choose NEW (a merely related-but-distinct scenario
    is its own test). The match doesn't need to be exact on data or wording — overlap of
    *purpose* is enough to make an existing test worth reusing as a model.
+
+   **Every NEW case must name its nearest existing test and say why it is not an UPDATE.**
+   One line per case in the approval report: `NEW — nearest: PROJ-2201 "Edit Property Items";
+   different because the case asserts the Property *Details* panel, not Items`. If the
+   nearest test cannot be named, step 4's candidate set was too narrow — widen the JQL or
+   page further and look again before drafting. "Nothing comparable" is a legitimate answer
+   in a thinly covered module, but it is an answer you state, not one you reach by not
+   looking.
+
+   **Why:** the default above is deliberately biased toward NEW, and an unexamined bias
+   produces a folder of near-duplicates. Forcing the comparison into writing turns the
+   tie-break into a visible decision the reviewer can overrule — and makes it obvious when
+   the real problem is that step 4 only read the first 100 tests.
 
    Build each case as a title, a labeled description block, and a **Gherkin scenario**
    (always — the Manual form derives from it, see Field mapping). Keep all data **generic**

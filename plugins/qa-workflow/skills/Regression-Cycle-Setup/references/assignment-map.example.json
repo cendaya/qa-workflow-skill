@@ -1,0 +1,26 @@
+{
+  "_readme": "Folder-based assignment map, used with --map-file. Copy to your maps_dir (see regression_cycle.maps_dir in qa-config.json) and fill in your own people and modules. Never commit a filled-in copy - it holds real Jira account ids.",
+
+  "_note_level": "Which segment of the test's Test Repository folder path is the module. Path /Product/System Test/Customer Screen/... with level 3 gives module 'Customer Screen'. Omit to default to 3.",
+  "level": 3,
+
+  "_note_people": "accountId -> display name. Names are for the report only; the accountId is what gets written. Find an accountId with the Atlassian MCP lookupJiraAccountId, or from the user's Jira profile URL.",
+  "people": {
+    "<accountId-1>": "<QA 1>",
+    "<accountId-2>": "<QA 2>",
+    "<accountId-3>": "<QA 3>",
+    "<accountId-4>": "<QA 4>"
+  },
+
+  "_note_modules": "Module name -> the accountId that owns it. Every module the Test Set contains must appear here or its tests come back UNMAPPED. Keep one person in adjacent areas rather than balancing counts.",
+  "modules": {
+    "<Module A>": "<accountId-1>",
+    "<Module B>": "<accountId-2>",
+    "<Module C>": "<accountId-2>",
+    "<Module D>": "<accountId-3>",
+    "<Module E>": "<accountId-4>"
+  },
+
+  "_note_default": "Optional. accountId that takes every test not matched by 'modules'. A single-owner execution (e.g. a smoke run) is just an empty 'modules' plus a 'default'.",
+  "default": null
+}

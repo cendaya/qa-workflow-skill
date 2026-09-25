@@ -5,7 +5,7 @@ description: Use when writing performance/load test cases from a Jira ticket —
 
 # CE-TC-Perf
 
-Generate Xray Cloud test cases for **performance/load** testing. Extends the JD-TC-writer workflow with performance-specific scenario coverage, k6 script generation, and 1-VU smoke testing.
+Generate Xray Cloud test cases for **performance/load** testing. Extends the TC-Router workflow with performance-specific scenario coverage, k6 script generation, and 1-VU smoke testing.
 
 Inherits all rules and workflow from `/TC-Router` — apply those steps exactly, with the additions and overrides below.
 

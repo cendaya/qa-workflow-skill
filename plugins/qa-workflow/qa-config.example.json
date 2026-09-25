@@ -92,5 +92,26 @@
     "_note": "Optional. Local checkout of your Selenium/Playwright regression repo, and the mapping file CE-AutomationVSManual reads. See references/te-mapping.md for the mapping file format.",
     "repo_path": null,
     "te_mapping_path": "~/.claude/qa-te-mapping.md"
-  }
+  },
+
+  "regression_cycle": {
+    "_note": "Optional. Only used by Regression-Cycle-Setup. Leave 'executions' empty to disable the skill. Each entry is one Test Execution in your release cycle: 'summary' is its exact name (no date or release suffix - the Test Plan tells cycles apart), 'test_set' is the Test Set it is filled from, and 'map' / 'keys_map' names the assignment map that sets its run assignees. Two executions may share a Test Set.",
+
+    "_note_maps_dir": "Where the assignment maps live. Keep it OUTSIDE the plugin directory - /plugin update overwrites plugin files - and out of source control, because the maps hold real Jira account ids. See skills/Regression-Cycle-Setup/references/*.example.json for the two formats.",
+    "maps_dir": "~/.claude/qa-regression-maps",
+
+    "_note_work_breakdown": "Optional. A single-select custom field your project stamps on every new Test Execution. Set both ids, or leave null to create executions without it.",
+    "work_breakdown": null,
+    "_example_work_breakdown": { "field_id": "customfield_XXXXX", "value_id": "NNNNN" },
+
+    "_note_map_vs_keys_map": "Use 'map' (folder-based, assignment-map.example.json) when the Test Set's tests are filed under module folders. Use 'keys_map' (group-based, group-map.example.json) when they all sit in one flat folder and have to be grouped by test key instead.",
+    "executions": []
+  },
+
+  "_example_regression_cycle_executions": [
+    { "summary": "<Product> Regression",            "test_set": "<PROJ-1000>", "map": "regression-map.json" },
+    { "summary": "<Other Product> Regression",      "test_set": "<PROJ-1001>", "keys_map": "other-groups.json" },
+    { "summary": "<Product> Prerelease Smoke Test", "test_set": "<PROJ-1002>", "map": "owner-prerelease.json" },
+    { "summary": "<Product> Post-Release Smoke Test", "test_set": "<PROJ-1002>", "map": "owner-postrelease.json" }
+  ]
 }

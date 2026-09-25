@@ -5,7 +5,7 @@ description: Use when writing UI/frontend test cases from a Jira ticket — gene
 
 # CE-TC-UI
 
-Generate Xray Cloud test cases for **UI/frontend** features. Extends the JD-TC-writer workflow with UI-specific scenario coverage: **happy path**, **edge cases**, and **negative scenarios**.
+Generate Xray Cloud test cases for **UI/frontend** features. Extends the TC-Router workflow with UI-specific scenario coverage: **happy path**, **edge cases**, and **negative scenarios**.
 
 Inherits all rules and workflow from `/TC-Router` — apply those steps exactly, with the additions and overrides below.
 

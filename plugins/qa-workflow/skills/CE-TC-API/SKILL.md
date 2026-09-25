@@ -5,7 +5,7 @@ description: Use when writing API/REST endpoint test cases from a Jira ticket â€
 
 # CE-TC-API
 
-Generate Xray Cloud test cases for **REST API** endpoints. Extends the JD-TC-writer workflow with API-specific scenario coverage, post-creation endpoint smoke testing, and Postman collection generation.
+Generate Xray Cloud test cases for **REST API** endpoints. Extends the TC-Router workflow with API-specific scenario coverage, post-creation endpoint smoke testing, and Postman collection generation.
 
 Inherits all rules and workflow from `/TC-Router` â€” apply those steps exactly, with the additions and overrides below.
 
